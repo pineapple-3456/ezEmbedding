@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 from transformers import BertTokenizer, BertModel, AutoTokenizer, AutoModel
@@ -124,7 +126,8 @@ class EmbeddingAPI:
 
     def get_sentence_embedding(self, text):
         completion = self.client.embeddings.create(model=self.model_name, input=text, encoding_format="float")
-        return completion.model_dump_json()
+        embedding = np.array(completion.data[0].embedding)
+        return embedding
 
 
 if __name__ == "__main__":
@@ -132,7 +135,7 @@ if __name__ == "__main__":
 
     # 建立一个bertEmbedding实例，属性包括模型的本地路径、tokenizer的本地路径、需要哪几个编码器的输出，以及句向量的池化方法
     # 一般来讲，tokenizer和模型在同一个文件夹中，注意tokenizer的本地路径是在模型的本地路径后面加入斜线"/"
-    bertEmbedding = bertEmbedding("../bert_localpath", "./bert_localpath/",
+    bertEmbedding = bertEmbedding("../bert_localpath", "../bert_localpath/",
                                   from_encoder="last4", pooling_method="mean")
     input_text_1 = "小明刚买了一个苹果手机，我也要买一个苹果。"
     input_text_2 = "小明今天去水果店买了苹果。"
@@ -168,7 +171,7 @@ if __name__ == "__main__":
 
     # 建立一个qwenEmbeddingLocal实例，属性包括模型的本地路径、tokenizer的本地路径
     # tokenizer的本地路径是在模型的本地路径后面加入斜线"/"
-    qwenEmbedding = qwenEmbeddingLocal("../qwen_localpath", "./qwen_localpath/", )
+    qwenEmbedding = qwenEmbeddingLocal("../qwen_localpath", "../qwen_localpath/", )
     input_texts = "一段测试文本"
 
     # 获取整个句子的嵌入向量，返回一个单维数组
@@ -178,7 +181,7 @@ if __name__ == "__main__":
 
     # 建立一个EmbeddingAPI实例，属性包括base_url、api_key和model_name
     # openai、qwen和其他嵌入模型，只要是嵌入模型，都可以使用，以下是以qwen的text-embedding-v4模型为例：
-    EmbeddingAPI = EmbeddingAPI(api_key="这里替换成你自己的api_key",
+    EmbeddingAPI = EmbeddingAPI(api_key=os.environ.get("QWEN_API_KEY"),
                                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
                                 model_name="text-embedding-v4")
 
