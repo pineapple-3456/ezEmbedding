@@ -120,12 +120,14 @@ class qwenEmbeddingLocal:
 
 class EmbeddingAPI:
 
-    def __init__(self, api_key, base_url, model_name):
+    def __init__(self, api_key, base_url, model_name, dimensions):
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model_name = model_name
+        self.dimensions = dimensions
 
     def get_sentence_embedding(self, text):
-        completion = self.client.embeddings.create(model=self.model_name, input=text, encoding_format="float")
+        completion = self.client.embeddings.create(model=self.model_name, input=text,
+                                                   encoding_format="float", dimensions=self.dimensions)
         embedding = np.array(completion.data[0].embedding)
         return embedding
 
@@ -183,7 +185,8 @@ if __name__ == "__main__":
     # openai、qwen和其他嵌入模型，只要是嵌入模型，都可以使用，以下是以qwen的text-embedding-v4模型为例：
     EmbeddingAPI = EmbeddingAPI(api_key=os.environ.get("QWEN_API_KEY"),
                                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-                                model_name="text-embedding-v4")
+                                model_name="text-embedding-v4",
+                                dimensions=1024)
 
     # 获取整个句子的嵌入向量，返回一个单维数组
     sentence_vec = EmbeddingAPI.get_sentence_embedding("一段测试文本")
