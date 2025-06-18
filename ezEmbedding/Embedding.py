@@ -39,7 +39,7 @@ class bertEmbedding:
 
     def get_word_index(self, text, word):
         word_tokens = self.tokenizer.tokenize(word)
-        text_tokens = self.tokenizer.tokenize(text)
+        text_tokens = ['[CLS]'] + self.tokenizer.tokenize(text) + ['[SEP]']
 
         first_token_index = [index for (index, value) in enumerate(text_tokens) if value == word_tokens[0]]
 
