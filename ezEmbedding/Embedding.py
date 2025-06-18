@@ -104,63 +104,18 @@ class bertEmbedding:
 
 class EmbeddingAPI:
 
-    def __init__(self, api_key, base_url, model_name, dimensions):
+    def __init__(self, api_key, base_url, model_name, dimensions=None):
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model_name = model_name
         self.dimensions = dimensions
 
     def get_sentence_embedding(self, text):
-        completion = self.client.embeddings.create(model=self.model_name, input=text,
-                                                   encoding_format="float", dimensions=self.dimensions)
-        embedding = np.array(completion.data[0].embedding)
+        if self.dimensions:
+            completion = self.client.embeddings.create(model=self.model_name, input=text,
+                                                       encoding_format="float", dimensions=self.dimensions)
+        else:
+            completion = self.client.embeddings.create(model=self.model_name, input=text,
+                                                       encoding_format="float")
+        embedding = np.array([completion.data[i].embedding for i in range(len(completion.data))])
         return embedding
 
-
-if __name__ == "__main__":
-    '''bertEmbedding用例'''
-
-    # 建立一个bertEmbedding实例，属性包括模型的本地路径、tokenizer的本地路径、需要哪几个编码器的输出，以及句向量的池化方法
-    # 一般来讲，tokenizer和模型在同一个文件夹中，注意tokenizer的本地路径是在模型的本地路径后面加入斜线"/"
-    bertEmbedding = bertEmbedding("../bert_localpath", "../bert_localpath/",
-                                  from_encoder="last4", pooling_method="mean")
-    input_text_1 = "小明刚买了一个苹果手机，我也要买一个苹果。"
-    input_text_2 = "小明今天去水果店买了苹果。"
-    word = "苹果"
-
-    # 获取句子里所有的token
-    # 在开头和末尾分别加入识别句子开始和结束的标签，即[CLS]和[SEP]，所以token数会比实际输入的句子多两个
-    # 返回一个列表
-    tokens = bertEmbedding.get_tokens(input_text_1)
-
-    # 获取每个token的嵌入
-    # 返回一个二维数组，第一个维度是token，第二个维度是对应的向量维度
-    # 如果实例属性中设置from_encoder="last4"(默认)，则使用后四个隐藏状态输出的拼接，得到3072维的向量
-    # 如果只需要最后一个隐藏状态的输出，需要设置from_encoder="last1"，得到768维向量
-    all_token_vecs = bertEmbedding.all_token_embeddings(input_text_1)
-
-    # 获取所需要的词语在句子中的位置（第几个token）
-    # 与上面同理，第一个token是[CLS]
-    # 返回一个二维数组，第一个维度是词语出现的次数，第二个维度是每次出现的位置
-    word_index = bertEmbedding.get_word_index(input_text_1, word)
-
-    # 获取词语的嵌入，即词语中包含的每个token的平均向量
-    # 返回一个二维数组，第一个维度是词语出现的次数，第二个维度是每次的嵌入向量的维度
-    word_embeddings = bertEmbedding.get_word_embedding(input_text_1, word)
-
-    # 获取整个句子的嵌入，返回一个单维数组
-    # 如果实例属性中设置pooling_method="mean"(默认)，则返回所有token的平均向量，维数与token一致(768或3072)
-    # 如果设置pooling_method="max"，则对每一维度，在所有token中取最大值，维数与token一致(768或3072)
-    # 如果设置pooling_method="cls_head"，则返回transformers中默认的768维cls_head池化向量
-    sentence_vec = bertEmbedding.get_sentence_embedding(input_text_1)
-
-    '''EmbeddingAPI用例'''
-
-    # 建立一个EmbeddingAPI实例，属性包括base_url、api_key和model_name
-    # openai、qwen和其他嵌入模型，只要是嵌入模型，都可以使用，以下是以qwen的text-embedding-v4模型为例：
-    EmbeddingAPI = EmbeddingAPI(api_key=os.environ.get("QWEN_API_KEY"),
-                                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-                                model_name="text-embedding-v4",
-                                dimensions=1024)
-
-    # 获取整个句子的嵌入向量，返回一个单维数组
-    sentence_vec = EmbeddingAPI.get_sentence_embedding("一段测试文本")
