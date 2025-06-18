@@ -102,22 +102,6 @@ class bertEmbedding:
             return None
 
 
-class qwenEmbeddingLocal:
-
-    def __init__(self, model_path, tokenizer_path):
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, padding_side='left')
-        self.model = AutoModel.from_pretrained(model_path)
-
-    def get_sentence_embedding(self, text):
-        batch_dict = self.tokenizer(text, truncation=True, return_tensors="pt")
-        batch_dict.to(self.model.device)
-
-        outputs = self.model(**batch_dict)
-        embedding = outputs.last_hidden_state.detach().numpy()[0, -1]
-
-        return embedding
-
-
 class EmbeddingAPI:
 
     def __init__(self, api_key, base_url, model_name, dimensions):
@@ -168,16 +152,6 @@ if __name__ == "__main__":
     # 如果设置pooling_method="max"，则对每一维度，在所有token中取最大值，维数与token一致(768或3072)
     # 如果设置pooling_method="cls_head"，则返回transformers中默认的768维cls_head池化向量
     sentence_vec = bertEmbedding.get_sentence_embedding(input_text_1)
-
-    '''qwenEmbeddingLocal用例'''
-
-    # 建立一个qwenEmbeddingLocal实例，属性包括模型的本地路径、tokenizer的本地路径
-    # tokenizer的本地路径是在模型的本地路径后面加入斜线"/"
-    qwenEmbedding = qwenEmbeddingLocal("../qwen_localpath", "../qwen_localpath/", )
-    input_texts = "一段测试文本"
-
-    # 获取整个句子的嵌入向量，返回一个单维数组
-    sentence_vec = qwenEmbedding.get_sentence_embedding(input_texts)
 
     '''EmbeddingAPI用例'''
 

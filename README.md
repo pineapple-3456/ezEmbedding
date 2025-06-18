@@ -2,9 +2,9 @@
 
 这个包是我的文本嵌入工具箱，也就是封装了我自己研究中需要反复使用的功能：即更方便地使用大模型获取文本嵌入，以及进行后续的分析。通过这个包，可以把一般的文本嵌入过程简化为两行代码，即对模型类进行实例化和调用实例方法得到嵌入向量的数组。
 
-这个包会随缘更新，取决于我之后研究中需要用到什么功能。另外由于本人水平有限，并非计算机或机器学习科班出身，不能保证这些代码在任何情况下都输出正确结果，欢迎指正。
+会随缘更新，取决于之后研究中需要用到什么功能。另外由于本人水平有限，并非计算机或机器学习科班出身，不能保证这些代码在任何情况下都输出正确结果，欢迎指正。
 
-可以通过pip install git下载，同时会自动下载依赖的包，包括：`numpy`, `torch`, `transformer`和`openai`    (参见requirement.txt)
+可以通过pip install git下载，同时会自动下载依赖的包，包括：`numpy`, `torch`, `transformers`和`openai`    (参见requirement.txt)
 
 ```
 pip install git+https://github.com/pineapple-3456/ezEmbedding.git
@@ -14,7 +14,7 @@ pip install git+https://github.com/pineapple-3456/ezEmbedding.git
 
 ## Embedding
 
-Embedding模块的功能是提取文本嵌入，包括三个类：
+Embedding模块的功能是提取文本嵌入，包括两个类：
 
 ```python
 bertEmbedding(model_path="", tokenizer_path="", from_encoder="last4", pooling_method="mean")
@@ -43,22 +43,6 @@ bertEmbedding(model_path="", tokenizer_path="", from_encoder="last4", pooling_me
 * `get_word_embedding(text="", word="")`：获取包含句子上下文信息的词语嵌入。返回一个二维数组，第一个维度是词语出现的次数，第二个维度是每次的嵌入向量的维度。词语嵌入向量是词语中包含的每个token向量的平均。
 
 * `get_sentence_embedding(text="")`：获取句子的嵌入，池化方法取决于实例的`pooling_method`。如果是`"mean"` 或`"max"`，则句向量维度与token维度一致 (768或3072)，如果是`"cls_head"`，则返回transformers中默认的768维CLS向量。
-
-```python
-qwenEmbeddingLocal(model_path="", tokenizer_path="")
-```
-
-使用Qwen提取句子的嵌入，需要将模型下载到本地，例如[qwen3-embedding-0.6B](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B)
-
-属性：
-
-- `model_path`：模型的本地路径。
-
-- `tokenizer_path`：tokenizer的路径，一般是模型路径后加上一个斜杠。
-
-方法：
-
-- `get_sentence_embedding(text="")`：获取句子的嵌入，返回一个数组。
 
 ```python
 EmbeddingAPI(api_key="", base_url="", model_name="", dimensions=float())
